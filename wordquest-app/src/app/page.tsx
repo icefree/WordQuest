@@ -16,6 +16,7 @@ import {
   TrendingUp,
   Clock,
   Trash2,
+  Volume2,
 } from 'lucide-react';
 import { useUserStore } from '@/lib/stores/userStore';
 import { Button } from '@/components/ui/Button';
@@ -159,9 +160,22 @@ export default function HomePage() {
                   </motion.div>
                   <div>
                     <h2 className="text-xl font-bold text-white">{user.username}</h2>
-                    <div className="flex items-center gap-1 text-amber-400">
-                      <Star className="w-4 h-4 fill-amber-400" />
-                      <span>Lv.{user.level} 冒险者</span>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1 text-amber-400">
+                        <Star className="w-4 h-4 fill-amber-400" />
+                        <span>Lv.{user.level} 冒险者</span>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          const utterance = new SpeechSynthesisUtterance('Welcome back, adventurer');
+                          utterance.lang = 'en-US';
+                          speechSynthesis.speak(utterance);
+                        }}
+                        className="p-1 rounded-md bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 transition-colors"
+                        title="测试发音"
+                      >
+                        <Volume2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 </div>
