@@ -6,6 +6,7 @@ interface RawKETWord {
   word: string;
   definition: string;
   translation?: string | null;
+  pronunciation?: string | null;
   image_url: string | null;
 }
 
@@ -19,7 +20,7 @@ const convertedWords: Word[] = (ketData as RawKETWord[]).map((raw) => ({
   imageUrl: raw.image_url || undefined,
   difficulty: 2, // Standard KET difficulty
   wordbookId: 'ket-core',
-  pronunciation: '', // Not provided in JSON
+  pronunciation: raw.pronunciation || '',
   example: '' // Not provided in JSON
 }));
 

@@ -109,10 +109,11 @@ export function WordCard({
                     title="点击播放读音"
                 >
                     <Volume2 className="w-4 h-4" />
-                    {word.pronunciation && (
-                        <span className="text-sm font-mono tracking-wider">{word.pronunciation}</span>
+                    {word.pronunciation ? (
+                        <span className="text-sm font-mono tracking-wide">/{word.pronunciation}/</span>
+                    ) : (
+                        <span className="text-xs uppercase tracking-tighter">Listen</span>
                     )}
-                    {!word.pronunciation && <span className="text-xs uppercase tracking-tighter">Listen</span>}
                 </motion.button>
 
                 {/* 单词显示（答对后或出错后显示） */}

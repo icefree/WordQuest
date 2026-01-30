@@ -207,14 +207,16 @@ export default function ReviewPage() {
                                             <h2 className="text-4xl font-bold text-white mb-2">
                                                 {currentWord?.word}
                                             </h2>
-                                            {currentWord?.pronunciation && (
-                                                <p className="text-purple-300/80 font-mono text-lg mb-4">
-                                                    [{currentWord.pronunciation}]
-                                                </p>
-                                            )}
-                                            <div className="flex items-center justify-center gap-2 text-purple-400 mb-4">
-                                                <Volume2 className="w-5 h-5" />
-                                                <span className="text-xs uppercase tracking-tighter">Auto Playing</span>
+                                            <div className="flex flex-col items-center gap-1 mb-6">
+                                                {currentWord?.pronunciation && (
+                                                    <p className="text-purple-300/90 font-mono text-lg">
+                                                        /{currentWord.pronunciation}/
+                                                    </p>
+                                                )}
+                                                <div className="flex items-center gap-2 text-purple-500/60">
+                                                    <Volume2 className="w-4 h-4" />
+                                                    <span className="text-[10px] uppercase tracking-widest font-semibold">Auto Playing</span>
+                                                </div>
                                             </div>
                                             {currentWord?.definitionEn && (
                                                 <p className="text-gray-400 text-base italic px-6 line-clamp-3">
