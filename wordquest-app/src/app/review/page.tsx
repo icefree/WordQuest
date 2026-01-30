@@ -228,7 +228,7 @@ export default function ReviewPage() {
                                     variant="ghost"
                                     size="lg"
                                     onClick={(e) => { e.stopPropagation(); handleResult(false); }}
-                                    className="w-32 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30"
+                                    className="w-40 whitespace-nowrap bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30"
                                 >
                                     <X className="w-6 h-6 mr-2" />
                                     不认识
@@ -238,7 +238,7 @@ export default function ReviewPage() {
                                     variant="ghost"
                                     size="lg"
                                     onClick={(e) => { e.stopPropagation(); handleResult(true); }}
-                                    className="w-32 bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/30"
+                                    className="w-40 whitespace-nowrap bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/30"
                                 >
                                     <Check className="w-6 h-6 mr-2" />
                                     认识
