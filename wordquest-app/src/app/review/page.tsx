@@ -207,17 +207,28 @@ export default function ReviewPage() {
                                             <h2 className="text-4xl font-bold text-white mb-2">
                                                 {currentWord?.word}
                                             </h2>
-                                            <div className="flex flex-col items-center gap-1 mb-6">
-                                                {currentWord?.pronunciation && (
-                                                    <p className="text-purple-300/90 font-mono text-lg">
-                                                        /{currentWord.pronunciation}/
-                                                    </p>
+                                            <motion.button
+                                                whileHover={{ scale: 1.05 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation(); // 防止翻转
+                                                    if (currentWord) {
+                                                        const utterance = new SpeechSynthesisUtterance(currentWord.word);
+                                                        utterance.lang = 'en-US';
+                                                        speechSynthesis.speak(utterance);
+                                                    }
+                                                }}
+                                                className="flex items-center justify-center gap-2 text-purple-300/80 hover:text-purple-200 transition-colors mx-auto px-4 py-2 rounded-full hover:bg-purple-500/10 mb-6 group relative"
+                                            >
+                                                <Volume2 className="w-4 h-4" />
+                                                {currentWord?.pronunciation ? (
+                                                    <span className="text-sm font-mono tracking-wide">/{currentWord.pronunciation}/</span>
+                                                ) : (
+                                                    <span className="text-xs uppercase tracking-tighter">Listen</span>
                                                 )}
-                                                <div className="flex items-center gap-2 text-purple-500/60">
-                                                    <Volume2 className="w-4 h-4" />
-                                                    <span className="text-[10px] uppercase tracking-widest font-semibold">Auto Playing</span>
-                                                </div>
-                                            </div>
+                                                {/* Auto-play indicator */}
+                                                <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] text-purple-500/50 block w-full whitespace-nowrap opacity-60">Auto Playing</span>
+                                            </motion.button>
                                             {currentWord?.definitionEn && (
                                                 <p className="text-gray-400 text-base italic px-6 line-clamp-3">
                                                     {currentWord.definitionEn}
