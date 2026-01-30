@@ -7,6 +7,8 @@ export interface Word {
   id: string;
   word: string;
   meaning: string;
+  definitionEn?: string;
+  imageUrl?: string;
   pronunciation?: string;
   example?: string;
   difficulty: 1 | 2 | 3 | 4 | 5;

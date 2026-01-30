@@ -8,7 +8,6 @@ import {
     RotateCcw,
     Check,
     X,
-    ChevronRight,
     BookOpen,
     Brain,
     Sparkles,
@@ -21,14 +20,8 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 
-interface ReviewCard {
-    word: Word;
-    isFlipped: boolean;
-    result?: 'correct' | 'wrong';
-}
-
 export default function ReviewPage() {
-    const { incrementTodayReviewed, addExp, addGold } = useUserStore();
+    const { learningRecords, incrementTodayReviewed, addExp, addGold, processReviewResult } = useUserStore();
 
     const [reviewWords, setReviewWords] = useState<Word[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -42,13 +35,30 @@ export default function ReviewPage() {
 
     // 初始化复习单词
     useEffect(() => {
-        const wordsToReview = getRandomWords(10);
+        // 优先复习正在学习中的单词 (status: learning 或 reviewing)
+        const recordsToReview = learningRecords
+            .filter(r => r.status === 'learning' || r.status === 'reviewing')
+            .sort(() => Math.random() - 0.5)
+            .slice(0, 10);
+
+        let wordsToReview: Word[] = [];
+        
+        if (recordsToReview.length > 0) {
+            wordsToReview = recordsToReview.map(r => words.find(w => w.id === r.wordId)!).filter(Boolean);
+        }
+
+        // 如果记录不足，补充一些随机单词作为“预习/复习”
+        if (wordsToReview.length < 5) {
+            const extraWords = getRandomWords(10 - wordsToReview.length)
+                .filter(w => !wordsToReview.some(existing => existing.id === w.id));
+            wordsToReview = [...wordsToReview, ...extraWords];
+        }
+
         setReviewWords(wordsToReview);
         setSessionStats({ correct: 0, wrong: 0, total: wordsToReview.length });
-    }, []);
+    }, [learningRecords]);
 
     const currentWord = reviewWords[currentIndex];
-    const progress = ((currentIndex) / reviewWords.length) * 100;
 
     // 翻转卡片
     const handleFlip = () => {
@@ -57,6 +67,8 @@ export default function ReviewPage() {
 
     // 标记结果
     const handleResult = (isCorrect: boolean) => {
+        if (!currentWord) return;
+
         if (isCorrect) {
             setSessionStats(prev => ({ ...prev, correct: prev.correct + 1 }));
             addExp(5);
@@ -65,6 +77,8 @@ export default function ReviewPage() {
             setSessionStats(prev => ({ ...prev, wrong: prev.wrong + 1 }));
         }
 
+        // 处理学习记录更新
+        processReviewResult(currentWord.id, isCorrect);
         incrementTodayReviewed();
 
         // 移动到下一个单词
@@ -81,11 +95,9 @@ export default function ReviewPage() {
 
     // 重新开始复习
     const handleRestart = () => {
-        const newWords = getRandomWords(10);
-        setReviewWords(newWords);
         setCurrentIndex(0);
         setIsFlipped(false);
-        setSessionStats({ correct: 0, wrong: 0, total: newWords.length });
+        setSessionStats({ correct: 0, wrong: 0, total: reviewWords.length });
         setIsSessionComplete(false);
     };
 
@@ -98,7 +110,7 @@ export default function ReviewPage() {
                         transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
                         className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"
                     />
-                    <p className="text-gray-400">正在加载复习单词...</p>
+                    <p className="text-gray-400">正在生成您的复习任务...</p>
                 </div>
             </div>
         );
@@ -168,13 +180,13 @@ export default function ReviewPage() {
                                             <h2 className="text-4xl font-bold text-white mb-4">
                                                 {currentWord?.word}
                                             </h2>
-                                            {currentWord?.pronunciation && (
-                                                <p className="text-gray-400 text-lg mb-4">
-                                                    {currentWord.pronunciation}
+                                            {currentWord?.definitionEn && (
+                                                <p className="text-gray-400 text-base italic px-6 line-clamp-3">
+                                                    {currentWord.definitionEn}
                                                 </p>
                                             )}
-                                            <p className="text-gray-500 text-sm mt-4">
-                                                点击卡片查看释义
+                                            <p className="text-gray-500 text-xs mt-6 uppercase tracking-widest">
+                                                点击翻转卡片
                                             </p>
                                         </CardContent>
                                     </Card>
@@ -188,10 +200,10 @@ export default function ReviewPage() {
                                         <CardContent className="text-center">
                                             <BookOpen className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
                                             <h3 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent mb-4">
-                                                {currentWord?.meaning}
+                                                {currentWord?.meaning === '点击「获取提示」查看释义' ? '请记住该单词' : currentWord?.meaning}
                                             </h3>
                                             {currentWord?.example && (
-                                                <p className="text-gray-400 text-sm italic">
+                                                <p className="text-gray-400 text-sm italic px-6">
                                                     "{currentWord.example}"
                                                 </p>
                                             )}
@@ -210,7 +222,7 @@ export default function ReviewPage() {
                                 <Button
                                     variant="ghost"
                                     size="lg"
-                                    onClick={() => handleResult(false)}
+                                    onClick={(e) => { e.stopPropagation(); handleResult(false); }}
                                     className="w-32 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30"
                                 >
                                     <X className="w-6 h-6 mr-2" />
@@ -220,18 +232,13 @@ export default function ReviewPage() {
                                 <Button
                                     variant="ghost"
                                     size="lg"
-                                    onClick={() => handleResult(true)}
+                                    onClick={(e) => { e.stopPropagation(); handleResult(true); }}
                                     className="w-32 bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/30"
                                 >
                                     <Check className="w-6 h-6 mr-2" />
                                     认识
                                 </Button>
                             </motion.div>
-
-                            {/* 提示 */}
-                            <p className="text-center text-gray-500 text-sm mt-6">
-                                {!isFlipped ? '点击卡片翻转查看释义' : '选择你是否认识这个单词'}
-                            </p>
                         </motion.div>
                     ) : (
                         /* 复习完成界面 */
@@ -274,7 +281,7 @@ export default function ReviewPage() {
                                             <Trophy className="w-8 h-8 text-amber-400" />
                                         </div>
                                         <p className="text-3xl font-bold text-amber-400">
-                                            {Math.round((sessionStats.correct / sessionStats.total) * 100)}%
+                                            {sessionStats.total > 0 ? Math.round((sessionStats.correct / sessionStats.total) * 100) : 0}%
                                         </p>
                                         <p className="text-sm text-gray-400">正确率</p>
                                     </div>

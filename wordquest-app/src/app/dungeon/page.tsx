@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import {
     ArrowLeft,
-    Heart,
     Pause,
     Play,
     RotateCcw,
@@ -13,6 +12,7 @@ import {
     Star,
     Coins,
     Trophy,
+    Lightbulb,
 } from 'lucide-react';
 import { useGameStore } from '@/lib/stores/gameStore';
 import { useUserStore } from '@/lib/stores/userStore';
@@ -39,12 +39,13 @@ export default function DungeonPage() {
         clearFeedback,
     } = useGameStore();
 
-    const { user, addExp, addGold, updateGameProgress, incrementTodayLearned } = useUserStore();
+    const { user, addExp, addGold, updateGameProgress, incrementTodayLearned, learnWord } = useUserStore();
 
     const [isHit, setIsHit] = useState(false);
     const [lastResult, setLastResult] = useState<'correct' | 'wrong' | null>(null);
     const [showGameOver, setShowGameOver] = useState(false);
     const [showVictory, setShowVictory] = useState(false);
+    const [showHint, setShowHint] = useState(false);
 
     // 初始化游戏
     useEffect(() => {
@@ -52,20 +53,17 @@ export default function DungeonPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // 切换单词时重置提示
+    useEffect(() => {
+        setShowHint(false);
+    }, [currentWord?.id]);
+
     // 检查游戏结束
     useEffect(() => {
         if (dungeon.isGameOver) {
             setShowGameOver(true);
         }
     }, [dungeon.isGameOver]);
-
-    // 清理反馈事件
-    useEffect(() => {
-        if (feedbackEvents.length > 0) {
-            const timer = setTimeout(clearFeedback, 2000);
-            return () => clearTimeout(timer);
-        }
-    }, [feedbackEvents, clearFeedback]);
 
     // 更新最高记录
     useEffect(() => {
@@ -75,6 +73,14 @@ export default function DungeonPage() {
             });
         }
     }, [dungeon.combo, updateGameProgress, user.level]);
+
+    // 清理反馈事件
+    useEffect(() => {
+        if (feedbackEvents.length > 0) {
+            const timer = setTimeout(clearFeedback, 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [feedbackEvents, clearFeedback]);
 
     // 提交答案处理
     const handleSubmit = useCallback(() => {
@@ -91,13 +97,22 @@ export default function DungeonPage() {
             addExp(result.expGained);
             addGold(result.goldGained);
             incrementTodayLearned();
+            learnWord(currentWord.id);
+        } else {
+            // 第一次输入错误后自动显示提示并自动朗读
+            setShowHint(true);
+            
+            // 自动朗读
+            const utterance = new SpeechSynthesisUtterance(currentWord.word);
+            utterance.lang = 'en-US';
+            speechSynthesis.speak(utterance);
         }
 
         // 重置答题状态
         setTimeout(() => {
             setLastResult(null);
         }, 500);
-    }, [currentWord, dungeon.isPaused, dungeon.isGameOver, submitAnswer, addExp, addGold, incrementTodayLearned]);
+    }, [currentWord, dungeon.isPaused, dungeon.isGameOver, submitAnswer, addExp, addGold, incrementTodayLearned, learnWord]);
 
     // 重新开始游戏
     const handleRestart = () => {
@@ -145,7 +160,7 @@ export default function DungeonPage() {
                 </div>
             </header>
 
-            {/* 主游戏区域 */}
+            {/* 主内容区域 */}
             <main className="max-w-4xl mx-auto px-4 py-8">
                 {/* 玩家状态栏 */}
                 <div className="mb-8 flex items-center gap-6">
@@ -184,18 +199,34 @@ export default function DungeonPage() {
                                     key={currentWord.id}
                                     word={currentWord}
                                     showWord={lastResult === 'wrong'}
+                                    showHint={showHint}
                                 />
                             </AnimatePresence>
                         )}
 
-                        {/* 输入框 */}
-                        <WordInput
-                            value={inputValue}
-                            onChange={setInputValue}
-                            onSubmit={handleSubmit}
-                            disabled={dungeon.isPaused || dungeon.isGameOver}
-                            isCorrect={lastResult === null ? null : lastResult === 'correct'}
-                        />
+                        {/* 输入框和提示按钮 */}
+                        <div className="space-y-4">
+                            <WordInput
+                                value={inputValue}
+                                onChange={setInputValue}
+                                onSubmit={handleSubmit}
+                                disabled={dungeon.isPaused || dungeon.isGameOver}
+                                isCorrect={lastResult === null ? null : lastResult === 'correct'}
+                            />
+
+                            <div className="flex justify-center">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setShowHint(true)}
+                                    disabled={showHint || dungeon.isPaused || dungeon.isGameOver}
+                                    icon={Lightbulb}
+                                    className="text-amber-400 hover:bg-amber-400/10"
+                                >
+                                    获取提示
+                                </Button>
+                            </div>
+                        </div>
 
                         {/* 提示信息 */}
                         <div className="flex justify-center gap-4 text-sm text-gray-500">

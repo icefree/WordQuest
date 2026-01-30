@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import {
     ArrowLeft,
@@ -17,8 +17,7 @@ import { useUserStore } from '@/lib/stores/userStore';
 import { words } from '@/lib/data/words';
 import { Plant, PlantStage, Word } from '@/types';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import { ProgressBar } from '@/components/ui/ProgressBar';
+import { Card, CardHeader } from '@/components/ui/Card';
 
 // 植物阶段配置
 const PLANT_STAGES: Record<PlantStage, { emoji: string; label: string; color: string }> = {
@@ -30,28 +29,10 @@ const PLANT_STAGES: Record<PlantStage, { emoji: string; label: string; color: st
     wilting: { emoji: '🥀', label: '枯萎', color: 'text-red-400' },
 };
 
-// 生成示例农场数据
-function generateFarmData(words: Word[]): Plant[] {
-    const stages: PlantStage[] = ['seed', 'sprout', 'growing', 'mature', 'flower'];
-    return words.slice(0, 12).map((word, index) => ({
-        wordId: word.id,
-        stage: stages[index % stages.length],
-        lastWateredAt: new Date(Date.now() - Math.random() * 86400000 * 3).toISOString(),
-        waterCount: Math.floor(Math.random() * 5),
-    }));
-}
-
 export default function FarmPage() {
-    const { learningRecords } = useUserStore();
-    const [plants, setPlants] = useState<Plant[]>([]);
+    const { plants, setPlants, addGold } = useUserStore();
     const [waterRemaining, setWaterRemaining] = useState(5);
     const [selectedPlant, setSelectedPlant] = useState<Plant | null>(null);
-
-    // 初始化农场
-    useEffect(() => {
-        const farmPlants = generateFarmData(words);
-        setPlants(farmPlants);
-    }, []);
 
     // 获取单词信息
     const getWordForPlant = (plant: Plant): Word | undefined => {
@@ -62,38 +43,44 @@ export default function FarmPage() {
     const handleWater = (plant: Plant) => {
         if (waterRemaining <= 0) return;
 
-        setPlants(prevPlants =>
-            prevPlants.map(p => {
-                if (p.wordId === plant.wordId) {
-                    // 升级植物阶段
-                    const stageOrder: PlantStage[] = ['seed', 'sprout', 'growing', 'mature', 'flower'];
-                    const currentIndex = stageOrder.indexOf(p.stage);
-                    const nextStage = currentIndex < stageOrder.length - 1
-                        ? stageOrder[currentIndex + 1]
-                        : p.stage;
+        const newPlants = plants.map(p => {
+            if (p.wordId === plant.wordId) {
+                // 升级植物阶段
+                const stageOrder: PlantStage[] = ['seed', 'sprout', 'growing', 'mature', 'flower'];
+                const currentIndex = stageOrder.indexOf(p.stage);
+                const nextStage = currentIndex < stageOrder.length - 1
+                    ? stageOrder[currentIndex + 1]
+                    : p.stage;
 
-                    return {
-                        ...p,
-                        stage: nextStage,
-                        lastWateredAt: new Date().toISOString(),
-                        waterCount: p.waterCount + 1,
-                    };
+                const updatedPlant = {
+                    ...p,
+                    stage: nextStage,
+                    lastWateredAt: new Date().toISOString(),
+                    waterCount: p.waterCount + 1,
+                };
+                
+                // 同时更新选中状态的 UI 实时显示
+                if (selectedPlant?.wordId === plant.wordId) {
+                    setSelectedPlant(updatedPlant);
                 }
-                return p;
-            })
-        );
+                
+                return updatedPlant;
+            }
+            return p;
+        });
 
+        setPlants(newPlants);
         setWaterRemaining(prev => prev - 1);
-        setSelectedPlant(null);
     };
 
     // 收获（开花的植物）
     const handleHarvest = (plant: Plant) => {
         if (plant.stage !== 'flower') return;
 
-        setPlants(prevPlants => prevPlants.filter(p => p.wordId !== plant.wordId));
+        const newPlants = plants.filter(p => p.wordId !== plant.wordId);
+        setPlants(newPlants);
+        addGold(50);
         setSelectedPlant(null);
-        // 这里可以添加获得金币等奖励
     };
 
     // 统计
@@ -198,73 +185,72 @@ export default function FarmPage() {
                     </CardHeader>
 
                     {/* 植物网格 */}
-                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                        {plants.map((plant, index) => {
-                            const word = getWordForPlant(plant);
-                            const stageInfo = PLANT_STAGES[plant.stage];
+                    <AnimatePresence mode="popLayout">
+                        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                            {plants.map((plant, index) => {
+                                const word = getWordForPlant(plant);
+                                const stageInfo = PLANT_STAGES[plant.stage];
 
-                            return (
-                                <motion.div
-                                    key={plant.wordId}
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ delay: index * 0.05 }}
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => setSelectedPlant(plant)}
-                                    className={`
-                    relative p-4 rounded-2xl cursor-pointer
-                    bg-gradient-to-br from-green-500/10 to-emerald-500/10
-                    border-2 transition-all
-                    ${selectedPlant?.wordId === plant.wordId
-                                            ? 'border-green-400 shadow-lg shadow-green-500/20'
-                                            : 'border-green-500/20 hover:border-green-500/40'
-                                        }
-                  `}
-                                >
-                                    {/* 植物 emoji */}
+                                return (
                                     <motion.div
-                                        className="text-5xl text-center mb-2"
-                                        animate={{ y: [0, -3, 0] }}
-                                        transition={{ repeat: Infinity, duration: 2, delay: index * 0.1 }}
+                                        key={plant.wordId}
+                                        layout
+                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.5 }}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => setSelectedPlant(plant)}
+                                        className={`
+                                            relative p-4 rounded-2xl cursor-pointer
+                                            bg-gradient-to-br from-green-500/10 to-emerald-500/10
+                                            border-2 transition-all
+                                            ${selectedPlant?.wordId === plant.wordId
+                                                ? 'border-green-400 shadow-lg shadow-green-500/20'
+                                                : 'border-green-500/20 hover:border-green-500/40'
+                                            }
+                                        `}
                                     >
-                                        {stageInfo.emoji}
-                                    </motion.div>
-
-                                    {/* 单词 */}
-                                    <p className="text-sm font-bold text-white text-center truncate">
-                                        {word?.word || '???'}
-                                    </p>
-
-                                    {/* 阶段标签 */}
-                                    <p className={`text-xs text-center mt-1 ${stageInfo.color}`}>
-                                        {stageInfo.label}
-                                    </p>
-
-                                    {/* 开花标识 */}
-                                    {plant.stage === 'flower' && (
                                         <motion.div
-                                            className="absolute -top-2 -right-2"
-                                            animate={{ scale: [1, 1.2, 1] }}
-                                            transition={{ repeat: Infinity, duration: 1 }}
+                                            className="text-5xl text-center mb-2"
+                                            animate={{ y: [0, -3, 0] }}
+                                            transition={{ repeat: Infinity, duration: 2, delay: index * 0.1 }}
                                         >
-                                            <Sparkles className="w-5 h-5 text-amber-400" />
+                                            {stageInfo.emoji}
                                         </motion.div>
-                                    )}
-                                </motion.div>
-                            );
-                        })}
 
-                        {/* 空地块 */}
-                        {plants.length < 12 && Array.from({ length: 12 - plants.length }).map((_, i) => (
-                            <div
-                                key={`empty-${i}`}
-                                className="p-4 rounded-2xl border-2 border-dashed border-gray-700 flex items-center justify-center min-h-[120px]"
-                            >
-                                <p className="text-gray-600 text-sm">空地</p>
-                            </div>
-                        ))}
-                    </div>
+                                        <p className="text-sm font-bold text-white text-center truncate">
+                                            {word?.word || '???' }
+                                        </p>
+
+                                        <p className={`text-xs text-center mt-1 ${stageInfo.color}`}>
+                                            {stageInfo.label}
+                                        </p>
+
+                                        {plant.stage === 'flower' && (
+                                            <motion.div
+                                                className="absolute -top-2 -right-2"
+                                                animate={{ scale: [1, 1.2, 1] }}
+                                                transition={{ repeat: Infinity, duration: 1 }}
+                                            >
+                                                <Sparkles className="w-5 h-5 text-amber-400" />
+                                            </motion.div>
+                                        )}
+                                    </motion.div>
+                                );
+                            })}
+
+                            {/* 空地块提示 */}
+                            {plants.length === 0 && (
+                                <div className="col-span-full py-12 text-center">
+                                    <p className="text-gray-500 mb-4">农场还是空着的...</p>
+                                    <Link href="/dungeon">
+                                        <Button icon={Sprout}>去地下城播种</Button>
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
+                    </AnimatePresence>
                 </Card>
 
                 {/* 选中植物的操作面板 */}
@@ -272,7 +258,7 @@ export default function FarmPage() {
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="fixed bottom-0 left-0 right-0 p-4 bg-[var(--bg-dark)]/95 backdrop-blur-lg border-t border-purple-500/20"
+                        className="fixed bottom-0 left-0 right-0 p-4 bg-[var(--bg-dark)]/95 backdrop-blur-lg border-t border-purple-500/20 z-50"
                     >
                         <div className="max-w-2xl mx-auto">
                             <Card className="p-4">
@@ -284,7 +270,9 @@ export default function FarmPage() {
                                                 {getWordForPlant(selectedPlant)?.word}
                                             </h3>
                                             <p className="text-sm text-gray-400">
-                                                {getWordForPlant(selectedPlant)?.meaning}
+                                                {getWordForPlant(selectedPlant)?.meaning === '点击「获取提示」查看释义' 
+                                                    ? getWordForPlant(selectedPlant)?.definitionEn 
+                                                    : getWordForPlant(selectedPlant)?.meaning}
                                             </p>
                                             <p className={`text-xs mt-1 ${PLANT_STAGES[selectedPlant.stage].color}`}>
                                                 阶段: {PLANT_STAGES[selectedPlant.stage].label} · 已浇水 {selectedPlant.waterCount} 次
@@ -332,19 +320,19 @@ export default function FarmPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-400">
                         <div className="flex items-start gap-2">
                             <span className="text-green-400">🌱</span>
-                            <p>每天学习新单词会在农场播下种子</p>
+                            <p>在地下城回答正确新单词会在农场播下种子</p>
                         </div>
                         <div className="flex items-start gap-2">
                             <span className="text-cyan-400">💧</span>
-                            <p>每天有 5 次浇水机会，浇水可加速植物生长</p>
+                            <p>每天（当前会话）有 5 次浇水机会，浇水可加速生成</p>
                         </div>
                         <div className="flex items-start gap-2">
                             <span className="text-pink-400">🌸</span>
-                            <p>植物开花后可收获，获得金币奖励</p>
+                            <p>植物开花后可收获，获得金钱奖励并腾出空地</p>
                         </div>
                         <div className="flex items-start gap-2">
-                            <span className="text-red-400">🥀</span>
-                            <p>7 天不复习的单词对应的植物会枯萎</p>
+                            <span className="text-purple-400">📦</span>
+                            <p>最多可同时种植 12 棵植物</p>
                         </div>
                     </div>
                 </Card>

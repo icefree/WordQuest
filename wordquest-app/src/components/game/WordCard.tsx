@@ -1,12 +1,14 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { Word } from '@/types';
 import { Volume2 } from 'lucide-react';
 
 interface WordCardProps {
     word: Word;
     showWord?: boolean;
+    showHint?: boolean;
     showExample?: boolean;
     className?: string;
 }
@@ -14,6 +16,7 @@ interface WordCardProps {
 export function WordCard({
     word,
     showWord = false,
+    showHint = false,
     showExample = false,
     className = '',
 }: WordCardProps) {
@@ -26,7 +29,7 @@ export function WordCard({
         relative p-8 rounded-2xl
         bg-gradient-to-br from-purple-900/40 to-indigo-900/40
         border-2 border-purple-500/30
-        backdrop-blur-lg
+        backdrop-blur-lg min-h-[220px] flex flex-col justify-center
         ${className}
       `}
         >
@@ -40,26 +43,70 @@ export function WordCard({
             </div>
 
             <div className="relative z-10 space-y-4">
-                {/* 中文释义 - 主要显示内容 */}
+                {/* 单词图片 */}
+                {showHint && word.imageUrl && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex justify-center mb-4"
+                    >
+                        <div className="relative w-32 h-32">
+                            <Image
+                                src={word.imageUrl}
+                                alt={word.word}
+                                fill
+                                unoptimized
+                                className="object-cover rounded-xl border-2 border-purple-500/50 shadow-lg shadow-purple-500/20"
+                            />
+                        </div>
+                    </motion.div>
+                )}
+
+                {/* 释义显示区域 */}
                 <motion.div
                     key={word.id}
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 0.3 }}
-                    className="text-center"
+                    className="text-center space-y-2"
                 >
-                    <p className="text-3xl font-bold bg-gradient-to-r from-purple-300 to-cyan-300 bg-clip-text text-transparent">
-                        {word.meaning}
-                    </p>
+                    {/* 默认显示题目（可以是英文定义或占位符） */}
+                    {!showHint ? (
+                        <p className="text-xl text-purple-100 font-medium italic px-4">
+                            {word.definitionEn || "Guess the word!"}
+                        </p>
+                    ) : (
+                        <>
+                            {word.definitionEn && (
+                                <p className="text-lg text-purple-200/70 italic px-4">
+                                    {word.definitionEn}
+                                </p>
+                            )}
+                            <p className="text-3xl font-bold bg-gradient-to-r from-purple-300 to-cyan-300 bg-clip-text text-transparent">
+                                {word.meaning === '点击「获取提示」查看释义' ? 'Correct!' : word.meaning}
+                            </p>
+                        </>
+                    )}
                 </motion.div>
 
-                {/* 音标 */}
-                {word.pronunciation && (
-                    <div className="flex items-center justify-center gap-2 text-gray-400">
-                        <Volume2 className="w-4 h-4" />
-                        <span className="text-sm">{word.pronunciation}</span>
-                    </div>
-                )}
+                {/* 发音按钮 - 即使数据中没有音标也允许播放读音 */}
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                        const utterance = new SpeechSynthesisUtterance(word.word);
+                        utterance.lang = 'en-US';
+                        speechSynthesis.speak(utterance);
+                    }}
+                    className="flex items-center justify-center gap-2 text-purple-300/80 hover:text-purple-200 transition-colors mx-auto px-4 py-2 rounded-full hover:bg-purple-500/10"
+                    title="点击播放读音"
+                >
+                    <Volume2 className="w-4 h-4" />
+                    {word.pronunciation && (
+                        <span className="text-sm font-mono tracking-wider">{word.pronunciation}</span>
+                    )}
+                    {!word.pronunciation && <span className="text-xs uppercase tracking-tighter">Listen</span>}
+                </motion.button>
 
                 {/* 单词显示（答对后显示） */}
                 {showWord && (
@@ -79,7 +126,7 @@ export function WordCard({
                         animate={{ opacity: 1 }}
                         className="text-sm text-gray-400 text-center italic"
                     >
-                        "{word.example}"
+                        &ldquo;{word.example}&rdquo;
                     </motion.p>
                 )}
 

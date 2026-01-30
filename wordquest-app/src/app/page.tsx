@@ -324,8 +324,8 @@ export default function HomePage() {
                   <Clock className="w-7 h-7 text-purple-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white">今日目标：学习 20 个单词</h3>
-                  <p className="text-gray-400">已完成 {user.todayLearned} / 20</p>
+                  <h3 className="text-lg font-bold text-white">今日目标：学习 30 个单词</h3>
+                  <p className="text-gray-400">已完成 {user.todayLearned} / 30</p>
                 </div>
               </div>
               <div className="flex gap-3">
@@ -344,7 +344,7 @@ export default function HomePage() {
             <div className="mt-4">
               <ProgressBar
                 value={user.todayLearned}
-                max={20}
+                max={30}
                 variant="default"
                 size="sm"
               />
