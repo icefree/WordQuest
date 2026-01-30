@@ -1,15 +1,16 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { ButtonHTMLAttributes, forwardRef } from 'react';
+import { motion, HTMLMotionProps } from 'framer-motion';
+import { forwardRef, ReactNode } from 'react';
 import { LucideIcon } from 'lucide-react';
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends HTMLMotionProps<"button"> {
     variant?: 'primary' | 'secondary' | 'success' | 'gold' | 'ghost';
     size?: 'sm' | 'md' | 'lg';
     icon?: LucideIcon;
     iconPosition?: 'left' | 'right';
     loading?: boolean;
+    children?: ReactNode;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
