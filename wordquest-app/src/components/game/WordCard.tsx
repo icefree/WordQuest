@@ -1,9 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Word } from '@/types';
-import { Volume2 } from 'lucide-react';
+import { Volume2, Image as ImageIcon } from 'lucide-react';
 
 interface WordCardProps {
     word: Word;
@@ -20,6 +21,8 @@ export function WordCard({
     showExample = false,
     className = '',
 }: WordCardProps) {
+    const [imageError, setImageError] = useState(false);
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -51,13 +54,20 @@ export function WordCard({
                         className="flex justify-center mb-4"
                     >
                         <div className="relative w-32 h-32">
-                            <Image
-                                src={word.imageUrl}
-                                alt={word.word}
-                                fill
-                                unoptimized
-                                className="object-cover rounded-xl border-2 border-purple-500/50 shadow-lg shadow-purple-500/20"
-                            />
+                            {!imageError ? (
+                                <Image
+                                    src={word.imageUrl}
+                                    alt={word.word}
+                                    fill
+                                    unoptimized
+                                    className="object-cover rounded-xl border-2 border-purple-500/50 shadow-lg shadow-purple-500/20"
+                                    onError={() => setImageError(true)}
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-purple-900/30 rounded-xl border-2 border-purple-500/30 shadow-lg shadow-purple-500/10">
+                                    <ImageIcon className="w-12 h-12 text-purple-400/50" />
+                                </div>
+                            )}
                         </div>
                     </motion.div>
                 )}

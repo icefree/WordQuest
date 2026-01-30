@@ -13,6 +13,7 @@ import {
     Sparkles,
     Trophy,
     Volume2,
+    Image as ImageIcon,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useUserStore } from '@/lib/stores/userStore';
@@ -35,6 +36,7 @@ export default function ReviewPage() {
         total: 0,
     });
     const [isSessionComplete, setIsSessionComplete] = useState(false);
+    const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
     const initialized = useRef(false);
 
@@ -111,6 +113,7 @@ export default function ReviewPage() {
         setIsFlipped(false);
         setSessionStats({ correct: 0, wrong: 0, total: reviewWords.length });
         setIsSessionComplete(false);
+        setImageErrors({});
     };
 
     if (reviewWords.length === 0) {
@@ -250,13 +253,20 @@ export default function ReviewPage() {
                                             <BookOpen className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
                                             {currentWord?.imageUrl && (
                                                 <div className="relative w-32 h-32 mx-auto mb-4">
-                                                    <Image
-                                                        src={currentWord.imageUrl}
-                                                        alt={currentWord.word}
-                                                        fill
-                                                        unoptimized
-                                                        className="object-cover rounded-xl border-2 border-cyan-500/30 shadow-lg"
-                                                    />
+                                                    {!imageErrors[currentWord.id] ? (
+                                                        <Image
+                                                            src={currentWord.imageUrl}
+                                                            alt={currentWord.word}
+                                                            fill
+                                                            unoptimized
+                                                            className="object-cover rounded-xl border-2 border-cyan-500/30 shadow-lg"
+                                                            onError={() => setImageErrors(prev => ({ ...prev, [currentWord.id]: true }))}
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center bg-cyan-900/30 rounded-xl border-2 border-cyan-500/30 shadow-lg">
+                                                            <ImageIcon className="w-12 h-12 text-cyan-400/50" />
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                             <h3 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent mb-2">
