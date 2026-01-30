@@ -3,7 +3,7 @@ import time
 import random
 from duckduckgo_search import DDGS
 
-DATA_FILE = 'src/lib/data/KET_Vocab_Full_1076.json'
+DATA_FILE = 'src/lib/data/KET_Vocab.json'
 
 def update_images():
     print("Starting image update process...")

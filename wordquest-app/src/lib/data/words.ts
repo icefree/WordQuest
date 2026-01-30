@@ -1,5 +1,5 @@
 import { Word, Wordbook } from '@/types';
-import ketData from './KET_Vocab_Full_1076.json';
+import ketData from './KET_Vocab.json';
 
 // Type for the JSON structure
 interface RawKETWord {
