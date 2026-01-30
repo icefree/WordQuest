@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import {
@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useUserStore } from '@/lib/stores/userStore';
-import { words, getRandomWords } from '@/lib/data/words';
+import { words } from '@/lib/data/words';
 import { Word } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -36,32 +36,28 @@ export default function ReviewPage() {
     });
     const [isSessionComplete, setIsSessionComplete] = useState(false);
 
+    const initialized = useRef(false);
+
     // 初始化复习单词
     useEffect(() => {
-        if (reviewWords.length > 0) return;
+        if (initialized.current || learningRecords.length === 0) return;
+        initialized.current = true;
 
-        // 优先复习正在学习中的单词 (status: learning 或 reviewing)
-        const recordsToReview = learningRecords
-            .filter(r => r.status === 'learning' || r.status === 'reviewing')
+        // 仅复习已学习过的单词 (根据记录筛选)
+        const recordsToReview = [...learningRecords]
+            .filter(r => r.status === 'learning' || r.status === 'reviewing' || r.status === 'mastered')
             .sort(() => Math.random() - 0.5)
-            .slice(0, 10);
+            .slice(0, 20); // 每次复习最多20个
 
-        let wordsToReview: Word[] = [];
-        
-        if (recordsToReview.length > 0) {
-            wordsToReview = recordsToReview.map(r => words.find(w => w.id === r.wordId)!).filter(Boolean);
+        const wordsToReview = recordsToReview
+            .map(r => words.find(w => w.id === r.wordId)!)
+            .filter(Boolean);
+
+        if (wordsToReview.length > 0) {
+            setReviewWords(wordsToReview);
+            setSessionStats({ correct: 0, wrong: 0, total: wordsToReview.length });
         }
-
-        // 如果记录不足，补充一些随机单词作为“预习/复习”
-        if (wordsToReview.length < 5) {
-            const extraWords = getRandomWords(10 - wordsToReview.length)
-                .filter(w => !wordsToReview.some(existing => existing.id === w.id));
-            wordsToReview = [...wordsToReview, ...extraWords];
-        }
-
-        setReviewWords(wordsToReview);
-        setSessionStats({ correct: 0, wrong: 0, total: wordsToReview.length });
-    }, [learningRecords, reviewWords.length]);
+    }, [learningRecords]); 
 
     const currentWord = reviewWords[currentIndex];
 
