@@ -12,7 +12,9 @@ import {
     Brain,
     Sparkles,
     Trophy,
+    Volume2,
 } from 'lucide-react';
+import Image from 'next/image';
 import { useUserStore } from '@/lib/stores/userStore';
 import { words, getRandomWords } from '@/lib/data/words';
 import { Word } from '@/types';
@@ -62,6 +64,15 @@ export default function ReviewPage() {
     }, [learningRecords, reviewWords.length]);
 
     const currentWord = reviewWords[currentIndex];
+
+    // 自动朗读
+    useEffect(() => {
+        if (currentWord && !isSessionComplete) {
+            const utterance = new SpeechSynthesisUtterance(currentWord.word);
+            utterance.lang = 'en-US';
+            speechSynthesis.speak(utterance);
+        }
+    }, [currentWord, isSessionComplete]);
 
     // 翻转卡片
     const handleFlip = () => {
@@ -182,9 +193,18 @@ export default function ReviewPage() {
                                     >
                                         <CardContent className="text-center">
                                             <Brain className="w-12 h-12 text-purple-400 mx-auto mb-4" />
-                                            <h2 className="text-4xl font-bold text-white mb-4">
+                                            <h2 className="text-4xl font-bold text-white mb-2">
                                                 {currentWord?.word}
                                             </h2>
+                                            {currentWord?.pronunciation && (
+                                                <p className="text-purple-300/80 font-mono text-lg mb-4">
+                                                    [{currentWord.pronunciation}]
+                                                </p>
+                                            )}
+                                            <div className="flex items-center justify-center gap-2 text-purple-400 mb-4">
+                                                <Volume2 className="w-5 h-5" />
+                                                <span className="text-xs uppercase tracking-tighter">Auto Playing</span>
+                                            </div>
                                             {currentWord?.definitionEn && (
                                                 <p className="text-gray-400 text-base italic px-6 line-clamp-3">
                                                     {currentWord.definitionEn}
@@ -204,6 +224,17 @@ export default function ReviewPage() {
                                     >
                                         <CardContent className="text-center">
                                             <BookOpen className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
+                                            {currentWord?.imageUrl && (
+                                                <div className="relative w-32 h-32 mx-auto mb-4">
+                                                    <Image
+                                                        src={currentWord.imageUrl}
+                                                        alt={currentWord.word}
+                                                        fill
+                                                        unoptimized
+                                                        className="object-cover rounded-xl border-2 border-cyan-500/30 shadow-lg"
+                                                    />
+                                                </div>
+                                            )}
                                             <h3 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent mb-4">
                                                 {currentWord?.meaning === '点击「获取提示」查看释义' ? '请记住该单词' : currentWord?.meaning}
                                             </h3>
