@@ -23,6 +23,7 @@ import { FeedbackOverlay } from '@/components/game/FeedbackOverlay';
 import { HealthBar } from '@/components/ui/ProgressBar';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { playSuccess, playError } from '@/lib/utils/audio';
 
 export default function DungeonPage() {
     const {
@@ -90,6 +91,7 @@ export default function DungeonPage() {
 
         if (result.isCorrect) {
             setIsHit(true);
+            playSuccess();
             setTimeout(() => setIsHit(false), 400);
 
             // 更新用户数据
@@ -98,6 +100,7 @@ export default function DungeonPage() {
             incrementTodayLearned();
             learnWord(currentWord.id);
         } else {
+            playError();
             // 第一次输入错误后自动显示提示并自动朗读
             setShowHint(true);
             

@@ -19,6 +19,7 @@ import { Word } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
+import { playSuccess, playError } from '@/lib/utils/audio';
 
 export default function ReviewPage() {
     const { learningRecords, incrementTodayReviewed, addExp, addGold, processReviewResult } = useUserStore();
@@ -75,8 +76,10 @@ export default function ReviewPage() {
             setSessionStats(prev => ({ ...prev, correct: prev.correct + 1 }));
             addExp(5);
             addGold(2);
+            playSuccess();
         } else {
             setSessionStats(prev => ({ ...prev, wrong: prev.wrong + 1 }));
+            playError();
         }
 
         // 处理学习记录更新

@@ -5,6 +5,7 @@
 import { create } from 'zustand';
 import { DungeonState, Monster, Word, CombatResult, FeedbackEvent } from '@/types';
 import { getRandomWords } from '@/lib/data/words';
+import { playCombo } from '@/lib/utils/audio';
 
 interface GameState {
   // Dungeon State
@@ -168,6 +169,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
 
       if (newCombo > 1 && newCombo % 5 === 0) {
         get().addFeedback({ type: 'combo', value: newCombo, duration: 1500 });
+        playCombo();
       }
 
       // 怪物死亡处理
