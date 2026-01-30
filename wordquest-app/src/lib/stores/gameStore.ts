@@ -218,10 +218,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
       if (newPlayerHp <= 0) {
         // 游戏结束
       } else {
-        // 继续，显示正确答案后下一个单词
-        setTimeout(() => {
-          get().nextWord();
-        }, 1500);
+        // 不再自动跳转，让用户看提示并重新输入
       }
     }
 

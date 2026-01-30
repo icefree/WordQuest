@@ -105,13 +105,18 @@ export default function DungeonPage() {
             const utterance = new SpeechSynthesisUtterance(currentWord.word);
             utterance.lang = 'en-US';
             speechSynthesis.speak(utterance);
+
+            // 1秒后清空输入框，方便重新输入
+            setTimeout(() => {
+                setInputValue('');
+            }, 1000);
         }
 
-        // 重置答题状态
+        // 重置答题状态（红绿框）
         setTimeout(() => {
             setLastResult(null);
-        }, 500);
-    }, [currentWord, dungeon.isPaused, dungeon.isGameOver, submitAnswer, addExp, addGold, incrementTodayLearned, learnWord]);
+        }, 800);
+    }, [currentWord, dungeon.isPaused, dungeon.isGameOver, submitAnswer, addExp, addGold, incrementTodayLearned, learnWord, setInputValue]);
 
     // 重新开始游戏
     const handleRestart = () => {
