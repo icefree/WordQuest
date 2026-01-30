@@ -9,10 +9,10 @@ interface RawKETWord {
 }
 
 // Convert JSON data to our Word interface
-const convertedWords: Word[] = (ketData as RawKETWord[]).map((raw, index) => ({
-  id: `ket_${index}`,
+const convertedWords: Word[] = (ketData as RawKETWord[]).map((raw) => ({
+  id: `ket_${raw.word.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
   word: raw.word,
-  meaning: '点击「获取提示」查看释义', // Default meaning before hint
+  meaning: raw.definition, // Now using actual definition
   definitionEn: raw.definition,
   imageUrl: raw.image_url || undefined,
   difficulty: 2, // Standard KET difficulty

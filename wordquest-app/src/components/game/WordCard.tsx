@@ -82,9 +82,11 @@ export function WordCard({
                                     {word.definitionEn}
                                 </p>
                             )}
-                            <p className="text-3xl font-bold bg-gradient-to-r from-purple-300 to-cyan-300 bg-clip-text text-transparent">
-                                {word.meaning === '点击「获取提示」查看释义' ? 'Correct!' : word.meaning}
-                            </p>
+                            {word.meaning && word.meaning !== word.definitionEn && (
+                                <p className="text-3xl font-bold bg-gradient-to-r from-purple-300 to-cyan-300 bg-clip-text text-transparent">
+                                    {word.meaning}
+                                </p>
+                            )}
                         </>
                     )}
                 </motion.div>

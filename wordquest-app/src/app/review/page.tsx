@@ -116,14 +116,29 @@ export default function ReviewPage() {
     if (reviewWords.length === 0) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                        className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"
-                    />
-                    <p className="text-gray-400">正在生成您的复习任务...</p>
-                </div>
+                {learningRecords.length === 0 ? (
+                    <div className="text-center p-8 bg-[var(--bg-card)]/30 backdrop-blur-xl rounded-3xl border border-white/10 max-w-md mx-4">
+                        <Brain className="w-16 h-16 text-purple-400 mx-auto mb-6 opacity-50" />
+                        <h2 className="text-2xl font-bold text-white mb-2">暂无复习内容</h2>
+                        <p className="text-gray-400 mb-8">
+                            你还没有在地下城学习过任何单词。先去开始你的第一场冒险吧！
+                        </p>
+                        <Link href="/dungeon">
+                            <Button variant="primary" icon={ArrowLeft} className="w-full">
+                                前往地下城
+                            </Button>
+                        </Link>
+                    </div>
+                ) : (
+                    <div className="text-center">
+                        <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                            className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"
+                        />
+                        <p className="text-gray-400">正在生成您的复习任务...</p>
+                    </div>
+                )}
             </div>
         );
     }
