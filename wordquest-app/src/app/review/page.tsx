@@ -236,7 +236,7 @@ export default function ReviewPage() {
                                                 </div>
                                             )}
                                             <h3 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent mb-4">
-                                                {currentWord?.meaning === '点击「获取提示」查看释义' ? '请记住该单词' : currentWord?.meaning}
+                                                {currentWord?.meaning}
                                             </h3>
                                             {currentWord?.example && (
                                                 <p className="text-gray-400 text-sm italic px-6">
