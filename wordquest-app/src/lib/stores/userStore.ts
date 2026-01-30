@@ -5,7 +5,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { UserProfile, GameProgress, LearningRecord, Plant } from '@/types';
-import { words } from '@/lib/data/words';
 
 interface UserState {
   // User Profile
@@ -29,6 +28,7 @@ interface UserState {
   learnWord: (wordId: string) => void;
   setPlants: (plants: Plant[]) => void;
   processReviewResult: (wordId: string, isCorrect: boolean) => void;
+  resetProgress: () => void;
 }
 
 // 经验值升级表
@@ -217,6 +217,15 @@ export const useUserStore = create<UserState>()(
         }
 
         state.updateLearningRecord(wordId, updates);
+      },
+
+      resetProgress: () => {
+        set({
+          user: initialUser,
+          gameProgress: initialGameProgress,
+          learningRecords: [],
+          plants: [],
+        });
       },
     }),
     {

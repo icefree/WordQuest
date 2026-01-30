@@ -44,7 +44,6 @@ export default function DungeonPage() {
     const [isHit, setIsHit] = useState(false);
     const [lastResult, setLastResult] = useState<'correct' | 'wrong' | null>(null);
     const [showGameOver, setShowGameOver] = useState(false);
-    const [showVictory, setShowVictory] = useState(false);
     const [showHint, setShowHint] = useState(false);
 
     // 初始化游戏
@@ -117,7 +116,6 @@ export default function DungeonPage() {
     // 重新开始游戏
     const handleRestart = () => {
         setShowGameOver(false);
-        setShowVictory(false);
         resetGame();
         initDungeon();
     };

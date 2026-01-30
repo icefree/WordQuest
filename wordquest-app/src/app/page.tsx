@@ -15,6 +15,7 @@ import {
   Zap,
   TrendingUp,
   Clock,
+  Trash2,
 } from 'lucide-react';
 import { useUserStore } from '@/lib/stores/userStore';
 import { Button } from '@/components/ui/Button';
@@ -28,7 +29,13 @@ const EXP_TABLE = [
 ];
 
 export default function HomePage() {
-  const { user, gameProgress, learningRecords } = useUserStore();
+  const { user, gameProgress, learningRecords, resetProgress } = useUserStore();
+
+  const handleReset = () => {
+    if (window.confirm('确定要重置所有学习进度吗？此操作不可撤销，你的金币、等级和农场植物都将被清空。')) {
+      resetProgress();
+    }
+  };
 
   // 计算升级进度
   const currentLevelExp = EXP_TABLE[user.level - 1] || 0;
@@ -350,6 +357,21 @@ export default function HomePage() {
               />
             </div>
           </Card>
+        </div>
+      </section>
+
+      {/* Danger Zone */}
+      <section className="px-6 py-8 opacity-50 hover:opacity-100 transition-opacity">
+        <div className="max-w-6xl mx-auto flex justify-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            icon={Trash2}
+            className="text-red-500 hover:bg-red-500/10"
+            onClick={handleReset}
+          >
+            重置所有进度
+          </Button>
         </div>
       </section>
     </div>

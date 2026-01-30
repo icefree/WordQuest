@@ -35,6 +35,8 @@ export default function ReviewPage() {
 
     // 初始化复习单词
     useEffect(() => {
+        if (reviewWords.length > 0) return;
+
         // 优先复习正在学习中的单词 (status: learning 或 reviewing)
         const recordsToReview = learningRecords
             .filter(r => r.status === 'learning' || r.status === 'reviewing')
@@ -56,7 +58,7 @@ export default function ReviewPage() {
 
         setReviewWords(wordsToReview);
         setSessionStats({ correct: 0, wrong: 0, total: wordsToReview.length });
-    }, [learningRecords]);
+    }, [learningRecords, reviewWords.length]);
 
     const currentWord = reviewWords[currentIndex];
 
@@ -204,7 +206,7 @@ export default function ReviewPage() {
                                             </h3>
                                             {currentWord?.example && (
                                                 <p className="text-gray-400 text-sm italic px-6">
-                                                    "{currentWord.example}"
+                                                    &quot;{currentWord.example}&quot;
                                                 </p>
                                             )}
                                         </CardContent>
