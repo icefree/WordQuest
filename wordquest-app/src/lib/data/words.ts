@@ -5,6 +5,7 @@ import ketData from './KET_Vocab_Full_1076.json';
 interface RawKETWord {
   word: string;
   definition: string;
+  translation?: string | null;
   image_url: string | null;
 }
 
@@ -13,6 +14,7 @@ const convertedWords: Word[] = (ketData as RawKETWord[]).map((raw) => ({
   id: `ket_${raw.word.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
   word: raw.word,
   meaning: raw.definition, // Now using actual definition
+  translation: raw.translation || undefined,
   definitionEn: raw.definition,
   imageUrl: raw.image_url || undefined,
   difficulty: 2, // Standard KET difficulty

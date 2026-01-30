@@ -87,6 +87,11 @@ export function WordCard({
                                     {word.meaning}
                                 </p>
                             )}
+                            {word.translation && (
+                                <p className="text-2xl font-bold text-cyan-400 mt-2">
+                                    {word.translation}
+                                </p>
+                            )}
                         </>
                     )}
                 </motion.div>
@@ -110,14 +115,17 @@ export function WordCard({
                     {!word.pronunciation && <span className="text-xs uppercase tracking-tighter">Listen</span>}
                 </motion.button>
 
-                {/* 单词显示（答对后显示） */}
+                {/* 单词显示（答对后或出错后显示） */}
                 {showWord && (
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-center"
+                        className="text-center space-y-2"
                     >
-                        <span className="text-2xl font-bold text-green-400">{word.word}</span>
+                        <div className="text-2xl font-bold text-green-400">{word.word}</div>
+                        {word.translation && (
+                            <div className="text-lg text-cyan-300">{word.translation}</div>
+                        )}
                     </motion.div>
                 )}
 
