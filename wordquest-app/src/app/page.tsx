@@ -147,17 +147,19 @@ export default function HomePage() {
               <div className="flex flex-col md:flex-row items-center gap-6">
                 {/* Avatar & Level */}
                 <div className="flex items-center gap-4">
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    className="relative"
-                  >
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center text-3xl font-bold text-white">
-                      {user.username[0]}
-                    </div>
-                    <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center text-sm font-bold text-gray-900">
-                      {user.level}
-                    </div>
-                  </motion.div>
+                  <Link href="/profile">
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      className="relative"
+                    >
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center text-3xl font-bold text-white">
+                        {user.username[0]}
+                      </div>
+                      <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center text-sm font-bold text-gray-900">
+                        {user.level}
+                      </div>
+                    </motion.div>
+                  </Link>
                   <div>
                     <h2 className="text-xl font-bold text-white">{user.username}</h2>
                     <div className="flex items-center gap-3">
@@ -165,6 +167,10 @@ export default function HomePage() {
                         <Star className="w-4 h-4 fill-amber-400" />
                         <span>Lv.{user.level} 冒险者</span>
                       </div>
+                      <Link href="/profile" className="flex items-center gap-1 text-purple-400 hover:text-purple-300 transition-colors ml-2">
+                        <TrendingUp className="w-3 h-3" />
+                        <span className="text-xs decoration-dashed underline">进入个人中心</span>
+                      </Link>
                       <button 
                         onClick={() => {
                           const utterance = new SpeechSynthesisUtterance('Welcome back, adventurer');
