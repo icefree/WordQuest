@@ -4,7 +4,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { UserProfile, GameProgress, LearningRecord, Plant } from '@/types';
+import { UserProfile, GameProgress, LearningRecord, Plant, ExportedData } from '@/types';
 
 interface UserState {
   // User Profile
@@ -29,6 +29,8 @@ interface UserState {
   setPlants: (plants: Plant[]) => void;
   processReviewResult: (wordId: string, isCorrect: boolean) => void;
   resetProgress: () => void;
+  exportProgress: () => ExportedData;
+  importProgress: (data: ExportedData) => void;
 }
 
 // 经验值升级表
@@ -225,6 +227,27 @@ export const useUserStore = create<UserState>()(
           gameProgress: initialGameProgress,
           learningRecords: [],
           plants: [],
+        });
+      },
+
+      exportProgress: () => {
+        const state = get();
+        return {
+          user: state.user,
+          gameProgress: state.gameProgress,
+          learningRecords: state.learningRecords,
+          plants: state.plants,
+          version: '1.0.0',
+          exportedAt: new Date().toISOString(),
+        };
+      },
+
+      importProgress: (data) => {
+        set({
+          user: data.user,
+          gameProgress: data.gameProgress,
+          learningRecords: data.learningRecords,
+          plants: data.plants,
         });
       },
     }),

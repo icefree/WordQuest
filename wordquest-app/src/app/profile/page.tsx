@@ -16,10 +16,14 @@ import {
     TrendingUp,
     Calendar,
     Edit2,
+    Download,
+    Upload,
+    Database,
+    Trash2,
 } from 'lucide-react';
 import { useUserStore } from '@/lib/stores/userStore';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader } from '@/components/ui/Card';
+import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 
 // 成就列表
@@ -89,7 +93,53 @@ const EXP_TABLE = [
 ];
 
 export default function ProfilePage() {
-    const { user, gameProgress, learningRecords } = useUserStore();
+    const { user, gameProgress, learningRecords, exportProgress, importProgress, resetProgress } = useUserStore();
+
+    const handleExport = () => {
+        const data = exportProgress();
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `wordquest-progress-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
+    const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target?.result as string);
+                // 简单的验证
+                if (data.user && data.learningRecords) {
+                    if (confirm('导入将覆盖当前所有进度，确定要继续吗？')) {
+                        importProgress(data);
+                        alert('进度导入成功！');
+                        window.location.reload(); // 刷新页面以确保所有状态同步
+                    }
+                } else {
+                    alert('无效的备份文件');
+                }
+            } catch (err) {
+                console.error('Import error:', err);
+                alert('读取文件失败');
+            }
+        };
+        reader.readAsText(file);
+    };
+
+    const handleReset = () => {
+        if (confirm('确定要重置所有进度吗？此操作不可撤销！')) {
+            resetProgress();
+            alert('进度已重置');
+        }
+    };
 
     // 计算升级进度
     const currentLevelExp = EXP_TABLE[user.level - 1] || 0;
@@ -395,6 +445,59 @@ export default function ProfilePage() {
                                 <p className="text-3xl font-bold text-white">{user.todayReviewed} <span className="text-sm font-normal text-gray-400">个单词</span></p>
                             </div>
                         </div>
+                    </Card>
+                </motion.section>
+
+                {/* 数据管理 */}
+                <motion.section
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="mt-8"
+                >
+                    <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                        <Database className="w-5 h-5 text-purple-400" />
+                        数据管理
+                    </h2>
+
+                    <Card className="p-6 border-red-500/20">
+                        <div className="flex flex-col md:flex-row gap-4">
+                            <Button 
+                                onClick={handleExport}
+                                icon={Download}
+                                className="flex-1 bg-purple-600 hover:bg-purple-700"
+                            >
+                                导出备份
+                            </Button>
+                            
+                            <div className="flex-1 relative">
+                                <Button 
+                                    icon={Upload}
+                                    variant="secondary"
+                                    className="w-full border-purple-500/30 hover:bg-purple-500/10"
+                                >
+                                    导入备份
+                                </Button>
+                                <input
+                                    type="file"
+                                    accept=".json"
+                                    onChange={handleImport}
+                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                />
+                            </div>
+
+                            <Button 
+                                onClick={handleReset}
+                                icon={Trash2}
+                                variant="ghost"
+                                className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                            >
+                                重置所有进度
+                            </Button>
+                        </div>
+                        <p className="mt-4 text-xs text-gray-500 text-center">
+                            提示：备份文件包含您的学习记录、游戏进度和个人资产。建议定期备份以防数据丢失。
+                        </p>
                     </Card>
                 </motion.section>
             </main>

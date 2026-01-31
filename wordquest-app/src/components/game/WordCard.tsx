@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Word } from '@/types';
@@ -183,14 +183,23 @@ interface WordInputProps {
     placeholder?: string;
 }
 
-export function WordInput({
+export const WordInput = forwardRef<HTMLInputElement, WordInputProps>(({
     value,
     onChange,
     onSubmit,
     disabled = false,
     isCorrect = null,
     placeholder = '输入单词...',
-}: WordInputProps) {
+}, ref) => {
+    const inputRef = useRef<HTMLInputElement>(null);
+    useImperativeHandle(ref, () => inputRef.current!);
+
+    useEffect(() => {
+        if (!disabled && isCorrect === null) {
+            inputRef.current?.focus();
+        }
+    }, [disabled, isCorrect]);
+
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !disabled) {
             onSubmit();
@@ -210,6 +219,7 @@ export function WordInput({
             className="relative"
         >
             <motion.input
+                ref={inputRef}
                 type="text"
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
@@ -244,4 +254,6 @@ export function WordInput({
             </motion.p>
         </motion.div>
     );
-}
+});
+
+WordInput.displayName = 'WordInput';

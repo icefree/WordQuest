@@ -163,3 +163,12 @@ export interface OverallStats {
   dungeonHighestFloor: number;
   maxCombo: number;
 }
+
+export interface ExportedData {
+  user: UserProfile;
+  gameProgress: GameProgress;
+  learningRecords: LearningRecord[];
+  plants: Plant[];
+  version: string;
+  exportedAt: string;
+}
