@@ -129,7 +129,7 @@ export const useUserStore = create<UserState>()(
             id: `record_${Date.now()}_${wordId}`,
             wordId,
             memoryStrength: 0.2,
-            reviewCount: 0,
+            reviewCount: 1, // 第一次学习也记录为一次复习/尝试
             correctCount: 1,
             lastReviewAt: new Date().toISOString(),
             nextReviewAt: new Date(Date.now() + 86400000).toISOString(), // 明天复习
@@ -147,13 +147,6 @@ export const useUserStore = create<UserState>()(
             learningRecords: [...state.learningRecords, newRecord],
             plants: state.plants.length < 12 ? [...state.plants, newPlant] : state.plants,
           }));
-        } else {
-          // 如果已存在，更新记忆强度和次数
-          state.updateLearningRecord(wordId, {
-            correctCount: existingRecord.correctCount + 1,
-            memoryStrength: Math.min(1, existingRecord.memoryStrength + 0.1),
-            lastReviewAt: new Date().toISOString(),
-          });
         }
       },
 
@@ -205,8 +198,8 @@ export const useUserStore = create<UserState>()(
           lastReviewAt: new Date().toISOString(),
           correctCount: isCorrect ? record.correctCount + 1 : record.correctCount,
           memoryStrength: isCorrect 
-            ? Math.min(1, record.memoryStrength + 0.15) 
-            : Math.max(0, record.memoryStrength - 0.1),
+            ? Math.min(1, record.memoryStrength + 0.1) 
+            : Math.max(0, record.memoryStrength - 0.15),
         };
 
         // 状态晋级逻辑

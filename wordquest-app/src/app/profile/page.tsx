@@ -153,10 +153,10 @@ export default function ProfilePage() {
         mastered: learningRecords.filter(r => r.status === 'mastered').length,
         learning: learningRecords.filter(r => r.status === 'learning' || r.status === 'reviewing').length,
         correctRate: learningRecords.length > 0
-            ? Math.round(
+            ? Math.min(100, Math.round(
                 (learningRecords.reduce((sum, r) => sum + r.correctCount, 0) /
                     Math.max(1, learningRecords.reduce((sum, r) => sum + r.reviewCount, 0))) * 100
-            )
+            ))
             : 0,
     };
 

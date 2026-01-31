@@ -200,9 +200,15 @@ export const WordInput = forwardRef<HTMLInputElement, WordInputProps>(({
         }
     }, [disabled, isCorrect]);
 
+    const lastSubmitTime = useRef(0);
+
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !disabled) {
-            onSubmit();
+            const now = Date.now();
+            if (now - lastSubmitTime.current > 500) { // 500ms 防抖
+                lastSubmitTime.current = now;
+                onSubmit();
+            }
         }
     };
 
